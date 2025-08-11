@@ -10,3 +10,5 @@ evaluate
 **/dist
 **/*egg-info
 *.lprof
+log
+weights

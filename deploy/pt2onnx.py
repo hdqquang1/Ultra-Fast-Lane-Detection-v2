@@ -4,7 +4,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
 import onnxmltools
-from onnxmltools.utils.float16_converter import convert_float_to_float16
+from onnxconverter_common.float16 import convert_float_to_float16
 from utils.common import get_model
 from utils.config import Config
 from utils.dist_utils import dist_print

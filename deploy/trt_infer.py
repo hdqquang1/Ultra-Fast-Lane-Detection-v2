@@ -87,9 +87,11 @@ class UFLDv2:
                                                           min(num_grid_row - 1,
                                                               max_indices_row[0, k, i] + self.input_width) + 1)))
 
-                        out_tmp = (pred['loc_row'][0, all_ind, k, i].softmax(0) * all_ind.float()).sum() + 0.5
+                        out_tmp = (pred['loc_row'][0, all_ind, k, i].softmax(
+                            0) * all_ind.float()).sum() + 0.5
                         out_tmp = out_tmp / (num_grid_row - 1) * self.ori_img_w
-                        tmp.append((int(out_tmp), int(self.row_anchor[k] * self.ori_img_h)))
+                        tmp.append(
+                            (int(out_tmp), int(self.row_anchor[k] * self.ori_img_h)))
                 coords.append(tmp)
 
         for i in col_lane_idx:
@@ -100,16 +102,19 @@ class UFLDv2:
                         all_ind = torch.tensor(list(range(max(0, max_indices_col[0, k, i] - self.input_width),
                                                           min(num_grid_col - 1,
                                                               max_indices_col[0, k, i] + self.input_width) + 1)))
-                        out_tmp = (pred['loc_col'][0, all_ind, k, i].softmax(0) * all_ind.float()).sum() + 0.5
+                        out_tmp = (pred['loc_col'][0, all_ind, k, i].softmax(
+                            0) * all_ind.float()).sum() + 0.5
                         out_tmp = out_tmp / (num_grid_col - 1) * self.ori_img_h
-                        tmp.append((int(self.col_anchor[k] * self.ori_img_w), int(out_tmp)))
+                        tmp.append(
+                            (int(self.col_anchor[k] * self.ori_img_w), int(out_tmp)))
                 coords.append(tmp)
         return coords
 
     def forward(self, img):
         im0 = img.copy()
         img = img[self.cut_height:, :, :]
-        img = cv2.resize(img, (self.input_width, self.input_height), cv2.INTER_CUBIC)
+        img = cv2.resize(
+            img, (self.input_width, self.input_height), cv2.INTER_CUBIC)
         img = img.astype(np.float32) / 255.0
         img = np.transpose(np.float32(img[:, :, :, np.newaxis]), (3, 2, 0, 1))
         img = np.ascontiguousarray(img)
@@ -129,11 +134,14 @@ class UFLDv2:
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_path', default='configs/culane_res34.py', help='path to config file', type=str)
+    parser.add_argument('--config_path', default='configs/culane_res34.py',
+                        help='path to config file', type=str)
     parser.add_argument('--engine_path', default='weights/culane_res34.engine',
                         help='path to engine file', type=str)
-    parser.add_argument('--video_path', default='example.mp4', help='path to video file', type=str)
-    parser.add_argument('--ori_size', default=(1600, 320), help='size of original frame', type=tuple)
+    parser.add_argument('--video_path', default='example.mp4',
+                        help='path to video file', type=str)
+    parser.add_argument('--ori_size', default=(1600, 320),
+                        help='size of original frame', type=tuple)
     return parser.parse_args()
 
 
