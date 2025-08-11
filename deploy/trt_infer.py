@@ -1,3 +1,4 @@
+from utils.config import Config
 import cv2
 import numpy as np
 import tensorrt as trt
@@ -8,7 +9,6 @@ import argparse
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
-from utils.config import Config
 
 
 class UFLDv2:
@@ -129,7 +129,7 @@ class UFLDv2:
         for lane in coords:
             for coord in lane:
                 cv2.circle(im0, coord, 2, (0, 255, 0), -1)
-        im0 = cv2.resize(im0, (800, 160), None)
+        im0 = cv2.resize(im0, (800, 160), cv2.INTER_CUBIC)
         cv2.imshow("result", im0)
 
 
@@ -150,14 +150,13 @@ if __name__ == "__main__":
     args = get_args()
     cap = cv2.VideoCapture(args.video_path)
     isnet = UFLDv2(args.engine_path, args.config_path, args.ori_size)
-    while True:
+    while success:
         success, img = cap.read()
-        if success:
-            # img = cv2.resize(img, (1600, 903))
-            # img = img[380:700, :, :]
-            img = cv2.resize(img, (1600, 320))
-            isnet.forward(img)
-        else:
+        if not success:
             break
+
+        img = cv2.resize(img, args.ori_size)
+        isnet.forward(img)
+
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break

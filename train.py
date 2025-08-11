@@ -1,4 +1,6 @@
-import torch, os, datetime
+import torch
+import os
+import datetime
 
 
 from utils.dist_utils import dist_print, dist_tqdm, synchronize
@@ -11,7 +13,8 @@ from utils.common import get_work_dir, get_logger
 import time
 from evaluation.eval_wrapper import eval_lane
 
-def train(net, data_loader, loss_dict, optimizer, scheduler,logger, epoch, metric_dict, dataset):
+
+def train(net, data_loader, loss_dict, optimizer, scheduler, logger, epoch, metric_dict, dataset):
     net.train()
     progress_bar = dist_tqdm(train_loader)
     for b_idx, data_label in enumerate(progress_bar):
@@ -25,24 +28,26 @@ def train(net, data_loader, loss_dict, optimizer, scheduler,logger, epoch, metri
         optimizer.step()
         scheduler.step(global_step)
 
-
         if global_step % 20 == 0:
             reset_metrics(metric_dict)
             update_metrics(metric_dict, results)
             for me_name, me_op in zip(metric_dict['name'], metric_dict['op']):
-                logger.add_scalar('metric/' + me_name, me_op.get(), global_step=global_step)
-            logger.add_scalar('meta/lr', optimizer.param_groups[0]['lr'], global_step=global_step)
+                logger.add_scalar('metric/' + me_name,
+                                  me_op.get(), global_step=global_step)
+            logger.add_scalar(
+                'meta/lr', optimizer.param_groups[0]['lr'], global_step=global_step)
 
-            if hasattr(progress_bar,'set_postfix'):
-                kwargs = {me_name: '%.3f' % me_op.get() for me_name, me_op in zip(metric_dict['name'], metric_dict['op'])}
+            if hasattr(progress_bar, 'set_postfix'):
+                kwargs = {me_name: '%.3f' % me_op.get() for me_name, me_op in zip(
+                    metric_dict['name'], metric_dict['op'])}
                 new_kwargs = {}
-                for k,v in kwargs.items():
+                for k, v in kwargs.items():
                     if 'lane' in k:
                         continue
                     new_kwargs[k] = v
-                progress_bar.set_postfix(loss = '%.3f' % float(loss), 
-                                        **new_kwargs)
-        
+                progress_bar.set_postfix(loss='%.3f' % float(loss),
+                                         **new_kwargs)
+
 
 if __name__ == "__main__":
     torch.backends.cudnn.benchmark = True
@@ -57,7 +62,8 @@ if __name__ == "__main__":
         distributed = int(os.environ['WORLD_SIZE']) > 1
     if distributed:
         torch.cuda.set_device(args.local_rank)
-        torch.distributed.init_process_group(backend='nccl', init_method='env://')
+        torch.distributed.init_process_group(
+            backend='nccl', init_method='env://')
 
         if args.local_rank == 0:
             with open('.work_dir_tmp_file.txt', 'w') as f:
@@ -74,23 +80,26 @@ if __name__ == "__main__":
 
     if args.local_rank == 0:
         os.system('rm .work_dir_tmp_file.txt')
-    
-    dist_print(datetime.datetime.now().strftime('[%Y/%m/%d %H:%M:%S]') + ' start training...')
+
+    dist_print(datetime.datetime.now().strftime(
+        '[%Y/%m/%d %H:%M:%S]') + ' start training...')
     dist_print(cfg)
-    assert cfg.backbone in ['18','34','50','101','152','50next','101next','50wide','101wide', '34fca']
+    assert cfg.backbone in ['18', '34', '50', '101', '152',
+                            '50next', '101next', '50wide', '101wide', '34fca']
 
     train_loader = get_train_loader(cfg)
     net = get_model(cfg)
 
     if distributed:
-        net = torch.nn.parallel.DistributedDataParallel(net, device_ids = [args.local_rank])
+        net = torch.nn.parallel.DistributedDataParallel(
+            net, device_ids=[args.local_rank])
     optimizer = get_optimizer(net, cfg)
 
     if cfg.finetune is not None:
         dist_print('finetune from ', cfg.finetune)
         state_all = torch.load(cfg.finetune)['model']
         state_clip = {}  # only use backbone parameters
-        for k,v in state_all.items():
+        for k, v in state_all.items():
             if 'model' in k:
                 state_clip[k] = v
         net.load_state_dict(state_clip, strict=False)
@@ -114,14 +123,15 @@ if __name__ == "__main__":
     res = None
     for epoch in range(resume_epoch, cfg.epoch):
 
-        train(net, train_loader, loss_dict, optimizer, scheduler,logger, epoch, metric_dict, cfg.dataset)
+        train(net, train_loader, loss_dict, optimizer,
+              scheduler, logger, epoch, metric_dict, cfg.dataset)
         train_loader.reset()
 
-        res = eval_lane(net, cfg, ep = epoch, logger = logger)
+        res = eval_lane(net, cfg, ep=epoch, logger=logger)
 
         if res is not None and res > max_res:
             max_res = res
             save_model(net, optimizer, epoch, work_dir, distributed)
-        logger.add_scalar('CuEval/X',max_res,global_step = epoch)
+        logger.add_scalar('CuEval/X', max_res, global_step=epoch)
 
     logger.close()

@@ -10,7 +10,6 @@ from utils.config import Config
 from utils.dist_utils import dist_print
 
 
-
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_path', default='configs/culane_res34.py', help='path to config file', type=str)
