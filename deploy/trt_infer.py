@@ -129,6 +129,7 @@ class UFLDv2:
         for lane in coords:
             for coord in lane:
                 cv2.circle(im0, coord, 2, (0, 255, 0), -1)
+        im0 = cv2.resize(im0, (800, 160), None)
         cv2.imshow("result", im0)
 
 
@@ -151,8 +152,12 @@ if __name__ == "__main__":
     isnet = UFLDv2(args.engine_path, args.config_path, args.ori_size)
     while True:
         success, img = cap.read()
-        img = cv2.resize(img, (1600, 903))
-        img = img[380:700, :, :]
-        isnet.forward(img)
+        if success:
+            # img = cv2.resize(img, (1600, 903))
+            # img = img[380:700, :, :]
+            img = cv2.resize(img, (1600, 320))
+            isnet.forward(img)
+        else:
+            break
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break
