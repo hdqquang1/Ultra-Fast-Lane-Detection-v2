@@ -150,13 +150,17 @@ if __name__ == "__main__":
     args = get_args()
     cap = cv2.VideoCapture(args.video_path)
     isnet = UFLDv2(args.engine_path, args.config_path, args.ori_size)
-    while success:
+    while cap.isOpened():
         success, img = cap.read()
         if not success:
             break
 
-        img = cv2.resize(img, args.ori_size)
+        # Crop image
+        img = img[:, :1100, :]
+        
+		# Inference
+        img = cv2.resize(img, (1600, 320))
         isnet.forward(img)
 
-        if cv2.waitKey(25) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
