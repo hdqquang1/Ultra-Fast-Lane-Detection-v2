@@ -8,27 +8,26 @@ import argparse
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--root', required=True,
-                        help='The root of the dataset')
+    parser.add_argument("--root", required=True, help="The root of the dataset")
     return parser
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = get_args().parse_args()
     culane_root = args.root
-    train_list = os.path.join(culane_root, 'list/train_gt.txt')
-    with open(train_list, 'r') as fp:
+    train_list = os.path.join(culane_root, "list/train_gt.txt")
+    with open(train_list, "r") as fp:
         res = fp.readlines()
     cache_dict = {}
     for line in tqdm.tqdm(res):
-        info = line.split(' ')
+        info = line.split(" ")
 
         label_path = os.path.join(culane_root, info[1][1:])
         label_img = cv2.imread(label_path)[:, :, 0]
 
-        txt_path = info[0][1:].replace('jpg', 'lines.txt')
+        txt_path = info[0][1:].replace("jpg", "lines.txt")
         txt_path = os.path.join(culane_root, txt_path)
-        lanes = open(txt_path, 'r').readlines()
+        lanes = open(txt_path, "r").readlines()
 
         all_points = np.zeros((4, 60, 2), dtype=float)
         the_anno_row_anchor = np.arange(0, 600, 10)
@@ -38,13 +37,13 @@ if __name__ == '__main__':
         # init using no lane
 
         for lane_idx, lane in enumerate(lanes):
-            ll = lane.strip().split(' ')
+            ll = lane.strip().split(" ")
             point_x = ll[::2]
             point_y = ll[1::2]
 
-            mid_x = int(float(point_x[int(len(point_x)/2)]))
-            mid_y = int(float(point_y[int(len(point_x)/2)]))
-            lane_order = label_img[mid_y-1, mid_x - 1]
+            mid_x = int(float(point_x[int(len(point_x) / 2)]))
+            mid_y = int(float(point_y[int(len(point_x) / 2)]))
+            lane_order = label_img[mid_y - 1, mid_x - 1]
 
             # Press C to continue. Just a problem with negative x.
             if lane_order == 0:
@@ -57,5 +56,5 @@ if __name__ == '__main__':
                 all_points[lane_order - 1, int(pos), 0] = p1x
 
         cache_dict[info[0][1:]] = all_points.tolist()
-    with open(os.path.join(culane_root, 'culane_anno_cache.json'), 'w') as f:
+    with open(os.path.join(culane_root, "culane_anno_cache.json"), "w") as f:
         json.dump(cache_dict, f)
