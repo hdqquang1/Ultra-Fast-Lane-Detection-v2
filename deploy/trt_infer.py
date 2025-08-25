@@ -54,7 +54,7 @@ class UFLDv2:
         self.input_height = cfg.train_height
         self.num_row = cfg.num_row
         self.num_col = cfg.num_col
-        self.row_anchor = np.linspace(0.42, 1, self.num_row)
+        self.row_anchor = np.linspace(0, 1, self.num_row)
         self.col_anchor = np.linspace(0, 1, self.num_col)
 
     def pred2coords(self, pred):
@@ -112,7 +112,7 @@ class UFLDv2:
 
     def forward(self, img):
         im0 = img.copy()
-        img = img[self.cut_height:, :, :]
+        # img = img[self.cut_height:, :, :]
         img = cv2.resize(
             img, (self.input_width, self.input_height), cv2.INTER_CUBIC)
         img = img.astype(np.float32) / 255.0
@@ -128,9 +128,10 @@ class UFLDv2:
         coords = self.pred2coords(preds)
         for lane in coords:
             for coord in lane:
-                cv2.circle(im0, coord, 2, (0, 255, 0), -1)
-        im0 = cv2.resize(im0, (800, 160), cv2.INTER_CUBIC)
+                cv2.circle(im0, coord, 5, (0, 255, 0), -1)
+        # im0 = cv2.resize(im0, (800, 160), cv2.INTER_CUBIC)
         cv2.imshow("result", im0)
+        return im0
 
 
 def get_args():
@@ -143,6 +144,8 @@ def get_args():
                         help='path to video file', type=str)
     parser.add_argument('--ori_size', default=(1600, 320),
                         help='size of original frame', type=tuple)
+    parser.add_argument('--video_output', default=None,
+                        help='path to output video file', type=str)
     return parser.parse_args()
 
 
@@ -150,6 +153,15 @@ if __name__ == "__main__":
     args = get_args()
     cap = cv2.VideoCapture(args.video_path)
     isnet = UFLDv2(args.engine_path, args.config_path, args.ori_size)
+    # Initialise video writer
+    out = None
+    if args.video_output:
+        output_dir = os.path.dirname(args.video_output)
+        os.makedirs(output_dir, exist_ok=True)
+
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        out = cv2.VideoWriter(args.video_output, fourcc, fps, (1600, 320))
     while cap.isOpened():
         success, img = cap.read()
         if not success:
@@ -157,10 +169,17 @@ if __name__ == "__main__":
 
         # Crop image
         img = img[:, :1100, :]
+
+        # img = img[641:1230, 101:1740, :]
+        # img = cv2.resize(img, (800, 160))
+        # cv2.imshow('img', img)
         
 		# Inference
         img = cv2.resize(img, (1600, 320))
-        isnet.forward(img)
+        img = isnet.forward(img)
+
+        if args.video_output:
+            out.write(img)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
