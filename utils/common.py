@@ -86,7 +86,7 @@ def merge_config():
             setattr(cfg, item, getattr(args, item))
 
     if cfg.dataset == 'CULane':
-        cfg.row_anchor = np.linspace(0.42,1, cfg.num_row)
+        cfg.row_anchor = np.linspace(0,1, cfg.num_row)
         cfg.col_anchor = np.linspace(0,1, cfg.num_col)
     elif cfg.dataset == 'Tusimple':
         cfg.row_anchor = np.linspace(160,710, cfg.num_row)/720
