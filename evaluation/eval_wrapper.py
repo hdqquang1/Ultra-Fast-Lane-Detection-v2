@@ -2,7 +2,9 @@
 from data.dataloader import get_test_loader
 from evaluation.tusimple.lane2 import LaneEval
 from utils.dist_utils import is_main_process, dist_print, get_rank, get_world_size, dist_tqdm, synchronize
-import os, json, torch, scipy
+import os
+import json
+import torch
 import numpy as np
 import platform
 from scipy.optimize import leastsq
@@ -321,7 +323,7 @@ def generate_lines_reg(out, out_ext, names, output_path, mode='normal', row_anch
     else:
         lane_list = range(num_lane)
 
-    local_width = 1
+    # local_width = 1
     for j in range(valid.shape[0]):
 
         name = names[j]
@@ -351,7 +353,7 @@ def generate_lines_col_reg(out_col,out_col_ext, names, output_path, mode='normal
     valid = out_col_ext.argmax(1).cpu()
     # n, num_cls, num_lanes
     out_col = out_col.cpu().sigmoid()
-    local_width = 1
+    # local_width = 1
 
     if mode == 'normal' or mode == '2row2col':
         lane_list = [0, 3]
@@ -987,7 +989,7 @@ def call_culane_eval(data_dir, exp_name,output_path):
     list9 = os.path.join(data_dir,'list/test_split/test9.txt')
     if not os.path.exists(os.path.join(output_path,'txt')):
         os.mkdir(os.path.join(output_path,'txt'))
-    out0 = os.path.join(output_path,'txt','out0_normal.txt')
+    out0=os.path.join(output_path,'txt','out0_normal.txt')
     out1=os.path.join(output_path,'txt','out1_crowd.txt')
     out2=os.path.join(output_path,'txt','out2_hlight.txt')
     out3=os.path.join(output_path,'txt','out3_shadow.txt')
