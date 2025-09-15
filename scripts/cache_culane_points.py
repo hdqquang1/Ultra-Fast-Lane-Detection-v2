@@ -29,10 +29,10 @@ if __name__ == "__main__":
         txt_path = os.path.join(culane_root, txt_path)
         lanes = open(txt_path, "r").readlines()
 
-        all_points = np.zeros((4, 60, 2), dtype=float)
+        all_points = np.zeros((2, 60, 2), dtype=float)
         the_anno_row_anchor = np.arange(0, 600, 10)
 
-        all_points[:, :, 1] = np.tile(the_anno_row_anchor, (4, 1))
+        all_points[:, :, 1] = np.tile(the_anno_row_anchor, (2, 1))
         all_points[:, :, 0] = -99999
         # init using no lane
 
@@ -53,7 +53,14 @@ if __name__ == "__main__":
             for i in range(len(point_x)):
                 p1x = float(point_x[i])
                 pos = (int(float(point_y[i]))) / 10
-                all_points[lane_order - 1, int(pos), 0] = p1x
+                try:
+                    all_points[lane_order - 1, int(pos), 0] = p1x
+                except IndexError:
+                    print(f'IndexError: index {lane_order - 1} is out of bounds for axis 0 with size {all_points.shape[0]}')
+                    print(f'These are the points: {point_x}, {point_y}')
+                    print(f'And the mid point is: {mid_x}, {mid_y}, with lane order {lane_order}')
+                    print(f'Label path: {label_path}, txt path: {txt_path}')
+                    raise IndexError
 
         cache_dict[info[0][1:]] = all_points.tolist()
     with open(os.path.join(culane_root, "culane_anno_cache.json"), "w") as f:
