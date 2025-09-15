@@ -1,5 +1,5 @@
 dataset = "CULane"
-data_root = "/home/its/Project/CULane_cropped"  # Need to be modified before running
+data_root = "/home/its/Project/CULane_Flora"  # Need to be modified before running
 epoch = 50
 batch_size = 16 # Changed from 32
 optimizer = "SGD"
@@ -23,7 +23,7 @@ resume = None
 test_model = ""
 test_work_dir = ""
 tta = True
-num_lanes = 4
+num_lanes = 2
 var_loss_power = 2.0
 auto_backup = True
 num_row = 72
