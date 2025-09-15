@@ -12,3 +12,4 @@ evaluate
 *.lprof
 log
 weights
+tmp
