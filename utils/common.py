@@ -5,6 +5,25 @@ from utils.config import Config
 import torch
 import time
 
+
+import matplotlib.pyplot as plt
+
+def debug_visualize(img, labels_col, cfg):
+    """
+    Dibuja una imagen con los puntos de carril proyectados
+    """
+    img = img.permute(1,2,0).cpu().numpy()
+    plt.imshow((img - img.min()) / (img.max() - img.min()))
+
+    lbl_col = labels_col.cpu().numpy()
+    for i in range(lbl_col.shape[0]):
+        for lane in range(lbl_col.shape[1]):
+            if lbl_col[i, lane] != -1:
+                x = lbl_col[i, lane] / cfg.num_cell_col * cfg.train_width
+                y = cfg.row_anchor[i] * cfg.train_height
+                plt.scatter(x, y, c='red', s=5)
+    plt.show()
+    
 def str2bool(v):
     if isinstance(v, bool):
        return v

@@ -33,7 +33,7 @@ def get_train_loader(batch_size, data_root, griding_num, dataset, use_aux, distr
                                            segment_transform=segment_transform, 
                                            row_anchor = culane_row_anchor,
                                            griding_num=griding_num, use_aux=use_aux, num_lanes = num_lanes)
-        cls_num_per_lane = 18
+        cls_num_per_lane = 60  #18 predefined anchors for CULane
 
     elif dataset == 'Tusimple':
         train_dataset = LaneClsDataset(data_root,
@@ -52,7 +52,16 @@ def get_train_loader(batch_size, data_root, griding_num, dataset, use_aux, distr
     else:
         sampler = torch.utils.data.RandomSampler(train_dataset)
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, sampler = sampler, num_workers=4)
+    train_loader = torch.utils.data.DataLoader(
+    train_dataset,
+    batch_size=batch_size,
+    sampler=sampler,
+    num_workers=min(24, max(8, os.cpu_count() // 2)),
+    pin_memory=True,
+    persistent_workers=True,
+    prefetch_factor=6,
+    drop_last=True,
+)
 
     return train_loader, cls_num_per_lane
 

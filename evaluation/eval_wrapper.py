@@ -66,21 +66,14 @@ def generate_lines_col(out_col,out_col_ext, shape, names, output_path, griding_n
                             fp.write('%.3f %.3f '% ( culane_col_anchor[k] * 1640, loc[j,k,i] ))
                     fp.write('\n')
 
-def generate_lines_local(dataset, out, out_ext, names, output_path, mode='normal', row_anchor = None):
+def generate_lines_local(dataset, out, out_ext, names, output_path, mode='normal', row_anchor=None):
     batch_size, num_grid_row, num_cls, num_lane = out.shape
     max_indices = out.argmax(1).cpu()
-    # n , num_cls, num_lanes
-    
     valid = out_ext.argmax(1).cpu()
-    # n, num_cls, num_lanes
     out = out.cpu()
 
-    if mode == 'normal' or mode == '2row2col':
-        if dataset == 'CULane':
-            lane_list = [1, 2]
-        elif dataset == 'CurveLanes':
-            # lane_list = [2, 3, 4, 5, 6, 7]
-            lane_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    if mode in ('normal', '2row2col'):
+        lane_list = list(range(num_lane))   # <- parcheado
     else:
         lane_list = range(num_lane)
 
@@ -114,23 +107,18 @@ def generate_lines_local(dataset, out, out_ext, names, output_path, mode='normal
                 elif mode == 'all':
                     fp.write('\n')
 
-def generate_lines_col_local(dataset, out_col,out_col_ext, names, output_path, mode='normal', col_anchor = None):
+def generate_lines_col_local(dataset, out_col, out_col_ext, names, output_path, mode='normal', col_anchor=None):
     batch_size, num_grid_col, num_cls, num_lane = out_col.shape
     max_indices = out_col.argmax(1).cpu()
-    # n, num_cls, num_lanes
     valid = out_col_ext.argmax(1).cpu()
-    # n, num_cls, num_lanes
     out_col = out_col.cpu()
     local_width = 1
 
-    if mode == 'normal' or mode == '2row2col':
-        if dataset == 'CULane':
-            lane_list = [0, 3]
-        elif dataset == 'CurveLanes':
-            # lane_list = [0, 1, 8, 9]
-            lane_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    if mode in ('normal', '2row2col'):
+        lane_list = list(range(num_lane))   # <- parcheado
     else:
         lane_list = range(num_lane)
+
 
     for j in range(valid.shape[0]):
 
@@ -160,23 +148,17 @@ def generate_lines_col_local(dataset, out_col,out_col_ext, names, output_path, m
                 elif mode == 'all':
                     fp.write('\n')
 
-def generate_lines_local_curve_combine(dataset, out, out_ext, names, output_path, mode='normal', row_anchor = None):
+def generate_lines_local_curve_combine(dataset, out, out_ext, names, output_path, mode='normal', row_anchor=None):
     batch_size, num_grid_row, num_cls, num_lane = out.shape
     max_indices = out.argmax(1).cpu()
-    # n , num_cls, num_lanes
-    
     valid = out_ext.argmax(1).cpu()
-    # n, num_cls, num_lanes
     out = out.cpu()
 
-    if mode == 'normal' or mode == '2row2col':
-        if dataset == 'CULane':
-            lane_list = [1, 2]
-        elif dataset == 'CurveLanes':
-            # lane_list = [2, 3, 4, 5, 6, 7]
-            lane_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    if mode in ('normal', '2row2col'):
+        lane_list = list(range(num_lane))   # <- parcheado
     else:
         lane_list = range(num_lane)
+
 
     local_width = 1
     for j in range(valid.shape[0]):
@@ -208,21 +190,15 @@ def generate_lines_local_curve_combine(dataset, out, out_ext, names, output_path
                 else:
                     fp.write('\n')
 
-def generate_lines_col_local_curve_combine(dataset, out_col,out_col_ext, names, output_path, mode='normal', col_anchor = None):
+def generate_lines_col_local_curve_combine(dataset, out_col, out_col_ext, names, output_path, mode='normal', col_anchor=None):
     batch_size, num_grid_col, num_cls, num_lane = out_col.shape
     max_indices = out_col.argmax(1).cpu()
-    # n, num_cls, num_lanes
     valid = out_col_ext.argmax(1).cpu()
-    # n, num_cls, num_lanes
     out_col = out_col.cpu()
     local_width = 1
 
-    if mode == 'normal' or mode == '2row2col':
-        if dataset == 'CULane':
-            lane_list = [0, 3]
-        elif dataset == 'CurveLanes':
-            # lane_list = [0, 1, 8, 9]
-            lane_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    if mode in ('normal', '2row2col'):
+        lane_list = list(range(num_lane))   # <- parcheado
     else:
         lane_list = range(num_lane)
 
@@ -310,18 +286,16 @@ def revise_lines_curve_combine(names, output_path):
             fp = open(line_save_path, 'w')
             fp.close()
 
-def generate_lines_reg(out, out_ext, names, output_path, mode='normal', row_anchor = None):
+def generate_lines_reg(out, out_ext, names, output_path, mode='normal', row_anchor=None):
     batch_size, num_grid_row, num_cls, num_lane = out.shape
-    # n , num_cls, num_lanes
-    
     valid = out_ext.argmax(1).cpu()
-    # n, num_cls, num_lanes
     out = out.cpu().sigmoid()
 
-    if mode == 'normal' or mode == '2row2col':
-        lane_list = [1, 2]
+    if mode in ('normal', '2row2col'):
+        lane_list = list(range(num_lane))   # <- parcheado
     else:
         lane_list = range(num_lane)
+
 
     # local_width = 1
     for j in range(valid.shape[0]):
@@ -346,19 +320,16 @@ def generate_lines_reg(out, out_ext, names, output_path, mode='normal', row_anch
                 elif mode == 'all':
                     fp.write('\n')
 
-def generate_lines_col_reg(out_col,out_col_ext, names, output_path, mode='normal', col_anchor = None):
+def generate_lines_col_reg(out_col, out_col_ext, names, output_path, mode='normal', col_anchor=None):
     batch_size, num_grid_col, num_cls, num_lane = out_col.shape
-    # max_indices = out_col.argmax(1).cpu()
-    # n, num_cls, num_lanes
     valid = out_col_ext.argmax(1).cpu()
-    # n, num_cls, num_lanes
     out_col = out_col.cpu().sigmoid()
-    # local_width = 1
 
-    if mode == 'normal' or mode == '2row2col':
-        lane_list = [0, 3]
+    if mode in ('normal', '2row2col'):
+        lane_list = list(range(num_lane))   # <- parcheado
     else:
         lane_list = range(num_lane)
+
 
     for j in range(valid.shape[0]):
 
@@ -650,7 +621,7 @@ def generate_lines_col_local_tta(loc_col, loc_col_up, loc_col_down, exist_col, e
                         fp.write('%.3f %.3f '% pt)
                     fp.write('\n')
 
-def run_test_tta(dataset, net, data_root, exp_name, work_dir,distributed, crop_ratio, train_width, train_height, batch_size=8, row_anchor = None, col_anchor = None):
+def run_test_tta(dataset, net, data_root, exp_name, work_dir,distributed, crop_ratio, train_width, train_height, batch_size=1, row_anchor = None, col_anchor = None):
     output_path = os.path.join(work_dir, exp_name)
     if not os.path.exists(output_path) and is_main_process():
         os.mkdir(output_path)

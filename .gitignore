@@ -10,6 +10,5 @@ evaluate
 **/dist
 **/*egg-info
 *.lprof
-log
-weights
-tmp
+2025*
+opencv*
